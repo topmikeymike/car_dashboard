@@ -5,8 +5,11 @@ import altair as alt
 # Load the data
 data = pd.read_csv('cardatagap.csv')
 
+# Set the title
+st.title("CAR MODEL IN MALAYSIA TIME SERIES")
+
 # Selectbox to select model
-selected_model = st.selectbox('Select Model (above chart)', data['NAMA_MODEL_YANG_SEBENAR'].unique(), key='selectbox_above_chart')
+selected_model = st.selectbox('Select Car Model:', data['NAMA_MODEL_YANG_SEBENAR'].unique(), key='selectbox_above_chart')
 
 # Filter data based on selected model
 filtered_data = data[data['NAMA_MODEL_YANG_SEBENAR'] == selected_model]
