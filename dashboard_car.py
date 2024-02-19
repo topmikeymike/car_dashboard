@@ -6,7 +6,15 @@ import altair as alt
 data = pd.read_csv('cardatagap.csv')
 
 # Set the title
-st.markdown("<h2 style='text-align: center;'>CAR MODEL IN MALAYSIA TIME SERIES</h2>", unsafe_allow_html=True)
+st.markdown(
+    """
+    <div style='text-align: center; padding: 20px;'>
+        <h1 style='color: #008080; font-size: 36px; font-family: "Arial Black", Gadget, sans-serif;'>CAR MODEL IN MALAYSIA TIME SERIES</h1>
+    </div>
+    """,
+    unsafe_allow_html=True
+)
+
 
 # Selectbox to select model
 selected_model = st.selectbox('Select Car Model:', data['NAMA_MODEL_YANG_SEBENAR'].unique(), key='selectbox_above_chart')
