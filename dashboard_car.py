@@ -30,16 +30,23 @@ else:
 if not selected_models:
     st.error("Please select at least one car model.")
 else:
+    # Set tooltip dynamically based on the number of selected car models
+    tooltip_fields = ['TAHUN_DIBUAT:O', 'COUNT_NAMA_MODEL_YANG_SEBENAR:Q']
+    if len(selected_models) <= 10:
+        tooltip_fields.append('NAMA_MODEL_YANG_SEBENAR:N')
+
     # Line chart
     chart = alt.Chart(filtered_data).mark_line(point=True).encode(
         x=alt.X('TAHUN_DIBUAT:O', title='Year', axis=alt.Axis(labelAngle=0)),
         y=alt.Y('COUNT_NAMA_MODEL_YANG_SEBENAR:Q', title='Count'),
-        color='NAMA_MODEL_YANG_SEBENAR:N',
-        tooltip=['TAHUN_DIBUAT:O', 'COUNT_NAMA_MODEL_YANG_SEBENAR:Q']
+        color=alt.Color('NAMA_MODEL_YANG_SEBENAR:N', scale=alt.Scale(scheme='category20')),
+        tooltip=tooltip_fields
     ).properties(
         width=900,
         height=600,
         title='Time Series for Selected Car Models'
+    ).configure_legend(
+        orient='bottom'
     )
 
     # Display the chart
@@ -56,7 +63,7 @@ else:
 
     # Apply styles to the reference table
     def apply_styles(df):
-        return df.style.applymap(lambda x: 'background-color: #f2f2f2', subset=pd.IndexSlice[:, df.columns[0]]).applymap(lambda x: 'background-color: #f2f2f2', subset=pd.IndexSlice[df.index[0], :])
+        return df.style.format("{:.0f}").applymap(lambda x: 'background-color: #f2f2f2', subset=pd.IndexSlice[:, df.columns[0]]).applymap(lambda x: 'background-color: #f2f2f2', subset=pd.IndexSlice[df.index[0], :])
 
     # Display the reference table with Streamlit default theme
     st.markdown("<h2>Reference Table</h2>", unsafe_allow_html=True)
