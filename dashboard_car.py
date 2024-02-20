@@ -68,3 +68,6 @@ else:
     # Display the reference table with Streamlit default theme
     st.markdown("<h2>Reference Table</h2>", unsafe_allow_html=True)
     st.write(apply_styles(reference_data))
+
+     # Copyright notice
+    st.markdown("<div style='text-align: center; padding-top: 20px;'>© 2024 Team Usecase. All rights reserved.</div>", unsafe_allow_html=True)
