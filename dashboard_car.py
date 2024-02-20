@@ -70,4 +70,4 @@ else:
     st.write(apply_styles(reference_data))
 
      # Copyright notice
-    st.markdown("<div style='text-align: center; padding-top: 20px;'>© 2024 Team Usecase. All rights reserved.</div>", unsafe_allow_html=True)
+    st.markdown("<div style='text-align: center; padding-top: 10px; font-size: 12px; color: #808080;'>© 2024 Team Usecase. All rights reserved.</div>", unsafe_allow_html=True)
