@@ -2,139 +2,68 @@ import streamlit as st
 import pandas as pd
 import altair as alt
 
-# Load the count data
-count_data = pd.read_csv('datagap_car.csv')
+# Load the data
+data = pd.read_csv("final_data.csv")
 
-# Load the price data
-price_data = pd.read_csv('carlist_price.csv')
+# Title
+st.title("Car Dashboard")
 
-# Set the title for the count chart
-st.markdown(
-    """
-    <div style='text-align: center; padding: 20px;'>
-        <h1 style='color: #2876eb; font-size: 36px; font-family: "Arial Black", Gadget, sans-serif;'>CAR MODEL IN MALAYSIA TIME SERIES</h1>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
+# Selection for car manufacturer and model
+selected_buatan = st.selectbox("Select Car Manufacturer (BUATAN):", data['BUATAN'].unique())
 
-# Multiselect to select car models for count visualization
-all_models = count_data['NAMA_MODEL_YANG_SEBENAR'].unique()
-default_selected_models = ["SAGA"]  # Set default models here
-selected_models = st.multiselect('Select Car Models:', ['All'] + list(all_models), default=default_selected_models, key='multiselect_models')
+# Filter unique car models based on selected manufacturer
+models_for_selected_buatan = data[data['BUATAN'] == selected_buatan]['NAMA_MODEL_YANG_SEBENAR'].unique()
 
-# Filter count data based on selected car models
-if "All" in selected_models:
-    filtered_count_data = count_data
-else:
-    filtered_count_data = count_data[count_data['NAMA_MODEL_YANG_SEBENAR'].isin(selected_models)]
+# Selection for car model based on selected manufacturer
+selected_model = st.selectbox("Select Car Model (NAMA_MODEL_YANG_SEBENAR):", models_for_selected_buatan)
 
-# Check if any model is selected for count data
-if not selected_models:
-    st.error("Please select at least one car model for count visualization.")
-else:
-    # Set tooltip dynamically based on the number of selected car models for count data
-    tooltip_fields_count = ['TAHUN_DIBUAT:O', 'COUNT_NAMA_MODEL_YANG_SEBENAR:Q']
-    if len(selected_models) <= 10:
-        tooltip_fields_count.append('NAMA_MODEL_YANG_SEBENAR:N')
+# Filter the data based on selected values
+filtered_data = data[(data['BUATAN'] == selected_buatan) & (data['NAMA_MODEL_YANG_SEBENAR'] == selected_model)]
 
-    # Line chart for count visualization
-    count_chart = alt.Chart(filtered_count_data).mark_line(point=True).encode(
-        x=alt.X('TAHUN_DIBUAT:O', title='Year', axis=alt.Axis(labelAngle=0)),
-        y=alt.Y('COUNT_NAMA_MODEL_YANG_SEBENAR:Q', title='Count'),
-        color=alt.Color('NAMA_MODEL_YANG_SEBENAR:N', scale=alt.Scale(scheme='category20')),
-        tooltip=tooltip_fields_count
-    ).properties(
-        width=900,
-        height=600,
-        title='Time Series for Selected Car Models (Count)'
-    ).configure_legend(
-        orient='bottom'
-    )
+# Display the filtered data
+st.write("## Filtered Data")
+st.write(filtered_data.reset_index(drop=True))  # Reset index without dropping it
 
-    # Display the count chart
-    st.altair_chart(count_chart, use_container_width=True)
+# Visualization - Bar chart for count of cars manufactured per year
+chart_data = data.groupby('TAHUN_DIBUAT')['Count(DOSM_ID)'].sum().reset_index()
+chart = alt.Chart(chart_data).mark_bar().encode(
+    x='TAHUN_DIBUAT:O',
+    y='Count(DOSM_ID):Q',
+    tooltip=['TAHUN_DIBUAT', 'Count(DOSM_ID)']
+).properties(
+    title='Count of Cars Manufactured per Year'
+).interactive()
 
-    # Create a reference table for the count data
-    count_reference_table = pd.DataFrame(filtered_count_data[['TAHUN_DIBUAT', 'COUNT_NAMA_MODEL_YANG_SEBENAR', 'NAMA_MODEL_YANG_SEBENAR']])
-    count_reference_table.columns = ['Year', 'Count', 'Car Model']
-    count_reference_table['Year'] = count_reference_table['Year'].astype(str)
-    count_reference_table = count_reference_table.pivot_table(index='Car Model', columns='Year', values='Count', aggfunc='sum')  # Pivot and aggregate
+st.write("## Count of Cars Manufactured per Year")
+st.altair_chart(chart, use_container_width=True)
 
-    # Fill NaN values with 0 for count data
-    count_reference_table.fillna(0, inplace=True)
+# Filter data for selected car model
+selected_model_data = data[data['NAMA_MODEL_YANG_SEBENAR'] == selected_model]
 
-    # Apply styles to the count reference table
-    def apply_count_styles(df):
-        return df.style.format("{:.0f}").applymap(lambda x: 'background-color: #f2f2f2', subset=pd.IndexSlice[:, df.columns[0]]).applymap(lambda x: 'background-color: #f2f2f2', subset=pd.IndexSlice[df.index[0], :])
+# Visualization - Line chart for average price of cars over the years for the selected model
+price_chart_data = selected_model_data.groupby('TAHUN_DIBUAT')['PRICE(RM)'].mean().reset_index()
+price_chart = alt.Chart(price_chart_data).mark_line().encode(
+    x='TAHUN_DIBUAT:O',
+    y='PRICE(RM):Q',
+    tooltip=['TAHUN_DIBUAT', alt.Tooltip('PRICE(RM)', format='.2f')]
+).properties(
+    title=f'Average Price of {selected_model} Over the Years'
+).interactive()
 
-    # Display the count reference table with Streamlit default theme
-    st.markdown("<h2>Count Reference Table</h2>", unsafe_allow_html=True)
-    st.write(apply_count_styles(count_reference_table))
+st.write(f"## Average Price of {selected_model} Over the Years")
+st.altair_chart(price_chart, use_container_width=True)
 
-# Set the title for the price chart
-st.markdown(
-    """
-    <div style='text-align: center; padding: 20px;'>
-        <h1 style='color: #2876eb; font-size: 36px; font-family: "Arial Black", Gadget, sans-serif;'>PRICE CAR IN MALAYSIA</h1>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
+# Visualization - Histogram for car age distribution for the selected model
+histogram = alt.Chart(selected_model_data).mark_bar().encode(
+    alt.X("TAHUN_DIBUAT:O", title="Year of Manufacture"),
+    y='Count(DOSM_ID):Q',
+    tooltip=['TAHUN_DIBUAT', 'Count(DOSM_ID)'],
+).properties(
+    title=f'Distribution of Car Age for {selected_model}'
+).interactive()
 
-# Multiselect to select car models for price visualization
-all_price_models = price_data['NAMA_MODEL'].unique()
-default_selected_price_models = list(set(default_selected_models) & set(all_price_models))  # Ensure default models are in the options list
-selected_price_models = st.multiselect('Select Car Models for Price:', ['All'] + list(all_price_models), default=default_selected_price_models, key='multiselect_price_models')
-
-# Filter price data based on selected car models
-if "All" in selected_price_models:
-    filtered_price_data = price_data
-else:
-    filtered_price_data = price_data[price_data['NAMA_MODEL'].isin(selected_price_models)]
-
-# Check if any model is selected for price data
-if not selected_price_models:
-    st.error("Please select at least one car model for price visualization.")
-else:
-    # Calculate average price for each car model and year
-    avg_price_data = filtered_price_data.groupby(['NAMA_MODEL', 'TAHUN_DIBUAT'])['PRICE'].mean().reset_index()
-
-    # Set tooltip dynamically based on the number of selected car models for price data
-    tooltip_fields_price = ['TAHUN_DIBUAT:O', 'PRICE:Q', 'NAMA_MODEL:N']
-    if len(selected_price_models) <= 10:
-        tooltip_fields_price.append('NAMA_MODEL:N')
-
-    # Line chart for price visualization
-    price_chart = alt.Chart(avg_price_data).mark_line(point=True).encode(
-        x=alt.X('TAHUN_DIBUAT:O', title='Year', axis=alt.Axis(labelAngle=0)),
-        y=alt.Y('PRICE:Q', title='Average Price (MYR)'),
-        color=alt.Color('NAMA_MODEL:N', scale=alt.Scale(scheme='category20')),
-        tooltip=tooltip_fields_price
-    ).properties(
-        width=900,
-        height=600,
-        title='Average Price Trends for Selected Car Models'
-    ).configure_legend(
-        orient='bottom'
-    )
-
-    # Display the price chart
-    st.altair_chart(price_chart, use_container_width=True)
-
-    # Create a reference table for the price data
-    price_reference_table = avg_price_data.pivot_table(index='NAMA_MODEL', columns='TAHUN_DIBUAT', values='PRICE', aggfunc='first')  # Pivot and aggregate
-
-    # Fill NaN values with 0 for price data
-    price_reference_table.fillna(0, inplace=True)
-
-    # Apply styles to the price reference table
-    def apply_price_styles(df):
-        return df.style.format("{:.2f}")
-
-    # Display the price reference table with Streamlit default theme
-    st.markdown("<h2>Price Reference Table</h2>", unsafe_allow_html=True)
-    st.write(apply_price_styles(price_reference_table))
+st.write(f"## Distribution of Car Age for {selected_model}")
+st.altair_chart(histogram, use_container_width=True)
 
 # Copyright notice
-st.markdown("<div style='text-align: center; padding-top: 10px; font-size: 12px; color: #808080;'>© 2024 Team Usecase. All rights reserved.</div>", unsafe_allow_html=True)
+st.markdown("<div style='text-align: center; padding-top: 20px;'>© 2024 Team Usecase. All rights reserved.</div>", unsafe_allow_html=True)
