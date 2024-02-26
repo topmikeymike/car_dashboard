@@ -11,6 +11,7 @@ corporate_gray = "#f4f4f4"
 
 
 # Corporate header style
+st.markdown("<h3 style='text-align: center; color: corporate_blue;'>(Prototype)</h3>", unsafe_allow_html=True)
 st.markdown("<h1 style='text-align: center; color: corporate_blue;'>Car Dashboard</h1>", unsafe_allow_html=True)
 
 # Total count of cars manufactured over the years
@@ -48,6 +49,16 @@ bar_chart = alt.Chart(top_counts).mark_bar().encode(
 
 # Display the bar chart
 st.altair_chart(bar_chart, use_container_width=True)
+
+
+# Reference table for top 10 highest counts with average prices
+st.write("### Reference Table")
+with st.markdown("<div style='overflow-x: auto;'>"):
+    st.write(top_counts.style.set_table_styles([
+        {'selector': 'table', 'props': [('border-collapse', 'collapse'), ('border', '2px solid #4682b4')]},
+        {'selector': 'th', 'props': [('background-color', '#4682b4'), ('color', 'white'), ('font-size', '16px'), ('padding', '10px')]},
+        {'selector': 'td', 'props': [('font-size', '14px'), ('padding', '8px'), ('border', '1px solid #4682b4')]}
+    ]))
 
 ####################################################################################################################################################################
 
