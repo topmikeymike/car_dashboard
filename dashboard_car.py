@@ -6,7 +6,7 @@ import altair as alt
 data1 = pd.read_csv("final_data.csv")
 
 # Load the second data
-data2 = pd.read_csv("pendapatan_kenderaan_IR.csv")
+data2 = pd.read_csv("KUMP_PENDAPATAN_W_PRICE.csv")
 
 # Corporate colors
 corporate_blue = "#4682b4"
@@ -157,8 +157,20 @@ income_chart_data2 = alt.Chart(data2).mark_bar().encode(
 ).interactive()
 st.altair_chart(income_chart_data2)
 
-st.write("### Reference Group Income")
-st.image("gg.PNG", use_column_width=True)
+# Visualization - Histogram for car manufacture years for Data 2
+histogram_data2 = alt.Chart(data2).mark_bar().encode(
+    alt.X("TAHUN_DIBUAT:O", title="Year of Manufacture"),
+    y='count():Q',
+    tooltip=['TAHUN_DIBUAT', 'count()'],
+).properties(
+    title=f'Distribution of Car Manufacture Years for Data 2',
+    width=600,
+    height=400
+)
+
+st.markdown(f"<h2 style='text-align: center; color: corporate_blue;'>Distribution of Car Manufactured Per Year</h2>", unsafe_allow_html=True)
+st.altair_chart(histogram_data2, use_container_width=True)
+
 
 # Interactive selection for income group for Data 2
 selected_income_group_data2 = st.selectbox('Select Income Group:', data2['KUMPULAN_PENDAPATAN'].unique())
@@ -198,11 +210,12 @@ model_chart_data2 = alt.Chart(filtered_data_data2).mark_bar().encode(
 ).interactive()
 st.altair_chart(model_chart_data2)
 
+
 # Reference Table for Data 2
 st.write("## Reference Table")
 st.write("Below is the reference table for all data based on the selected income group:")
 st.dataframe(filtered_data_data2, height=600)  # Adjust the height as per your preference
 
 
-# Corporate footer style for Data 1
+# Corporate footer style for Data 2
 st.markdown("<div style='text-align: center; padding-top: 12px; color: corporate_gray;'>© 2024 Team Usecase. All rights reserved.</div>", unsafe_allow_html=True)
