@@ -158,7 +158,7 @@ income_chart_data2 = alt.Chart(data2).mark_bar().encode(
 st.altair_chart(income_chart_data2)
 
 st.write("### Reference Group Income")
-st.image("gg.PNG", use_column_width=True)
+st.image("gg.png", use_column_width=True)
 
 # Interactive selection for income group for Data 2
 selected_income_group_data2 = st.selectbox('Select Income Group:', data2['KUMPULAN_PENDAPATAN'].unique())
